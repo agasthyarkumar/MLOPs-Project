@@ -42,16 +42,16 @@ lasso_regression:
   fit_intercept: true
   random_state: 42
 
-neural_network:
-  hidden_layers: [128, 64, 32]
-  activation: "relu"
-  learning_rate: 0.001
-  epochs: 100
-  batch_size: 32
-  validation_split: 0.2
-  early_stopping:
-    patience: 10
-    restore_best_weights: true
+#neural_network:
+#  hidden_layers: [128, 64, 32]
+#  activation: "relu"
+#  learning_rate: 0.001
+#  epochs: 100
+#  batch_size: 32
+#  validation_split: 0.2
+#  early_stopping:
+#    patience: 10
+#    restore_best_weights: true
 
 # Hyperparameter tuning
 hyperparameter_tuning:
