@@ -16,3 +16,15 @@ if [ -f "data/raw/housing.csv" ]; then
     echo "📊 Dataset location: data/raw/housing.csv"
     
     # Show basic info
+    echo ""
+    echo "Dataset Preview:"
+    head -n 5 data/raw/housing.csv
+    
+    # Count lines
+    lines=$(wc -l < data/raw/housing.csv)
+    echo ""
+    echo "Total rows: $lines"
+else
+    echo "❌ Failed to download dataset"
+    exit 1
+fi
