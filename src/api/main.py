@@ -139,8 +139,14 @@ async def predict(request: PredictionRequest):
         raise HTTPException(status_code=503, detail="Model or preprocessor not loaded")
     
     try:
-        # Convert request to DataFrame
-        input_data = pd.DataFrame([request.dict()])
+        # Convert request to dict (handles both Pydantic v1 and v2)
+        try:
+            input_dict = request.model_dump()  # Pydantic v2
+        except AttributeError:
+            input_dict = request.dict()  # Pydantic v1
+        
+        # Convert to DataFrame
+        input_data = pd.DataFrame([input_dict])
         
         # Feature engineering (same as preprocessing)
         if 'total_rooms' in input_data.columns and 'households' in input_data.columns:
@@ -159,8 +165,13 @@ async def predict(request: PredictionRequest):
         # Encode categorical variables
         if 'ocean_proximity' in input_data.columns:
             # One-hot encode (must match training)
-            dummies = pd.get_dummies(input_data['ocean_proximity'], prefix='ocean_proximity', drop_first=True)
-            input_data = pd.concat([input_data, dummies], axis=1)
+            # Get unique categories from training
+            ocean_categories = ['<1H OCEAN', 'INLAND', 'ISLAND', 'NEAR BAY', 'NEAR OCEAN']
+            for category in ocean_categories:
+                if category != ocean_categories[0]:  # drop_first=True
+                    col_name = f'ocean_proximity_{category}'
+                    input_data[col_name] = 1 if input_data['ocean_proximity'].iloc[0] == category else 0
+            
             input_data.drop('ocean_proximity', axis=1, inplace=True)
         
         # Scale features
@@ -172,8 +183,15 @@ async def predict(request: PredictionRequest):
         # Calculate confidence (for tree-based models)
         confidence = None
         if hasattr(model, 'estimators_'):
-            predictions = np.array([tree.predict(input_scaled)[0] for tree in model.estimators_])
-            confidence = float(1 - (np.std(predictions) / np.mean(predictions)))
+            try:
+                predictions = np.array([tree.predict(input_scaled)[0] for tree in model.estimators_])
+                std = np.std(predictions)
+                mean = np.mean(predictions)
+                if mean != 0:
+                    confidence = float(1 - (std / abs(mean)))
+                    confidence = max(0, min(1, confidence))  # Clamp between 0 and 1
+            except:
+                confidence = None
         
         return {
             "predicted_price": float(prediction),
