@@ -314,7 +314,7 @@ This project is licensed under the MIT License.
 
 ## 👤 Author
 
-Agasthya R Kumar
+Agasthya R Kumar - github.com/agasthyarkumar
 
 ## 🙏 Acknowledgments
 
