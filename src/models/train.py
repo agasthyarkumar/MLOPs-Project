@@ -188,7 +188,7 @@ class ModelTrainer:
             
             # Save model locally
             os.makedirs('models', exist_ok=True)
-            model_path = f'models/{self.model_type}_model.pkl'
+            model_path = "models/model.pkl"
             joblib.dump(self.model, model_path)
             logger.info(f"Model saved to {model_path}")
             
