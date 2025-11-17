@@ -1,41 +1,41 @@
-# MLOPs-Project
 # 🏠 MLflow House Price Prediction Pipeline
 
-A production-ready machine learning pipeline for house price prediction with complete MLOps lifecycle management using MLflow, FastAPI, and Docker.
+A production-ready machine learning pipeline for house price prediction with full MLOps lifecycle management using MLflow, FastAPI, and Docker.
 
 ![Python](https://img.shields.io/badge/python-3.9%2B-blue)
 ![MLflow](https://img.shields.io/badge/MLflow-2.8.1-orange)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.104.1-green)
 ![Docker](https://img.shields.io/badge/Docker-ready-blue)
 
+---
+
 ## 🎯 Features
 
-- **Complete ML Pipeline**: Data ingestion, preprocessing, training, and deployment
-- **Experiment Tracking**: MLflow integration for experiment management
-- **REST API**: FastAPI-powered prediction service
-- **Drift Detection**: Automated data and model drift monitoring with Evidently
-- **CI/CD**: GitHub Actions workflows for testing and retraining
-- **Containerized**: Docker support for easy deployment
-- **Monitoring**: Real-time model performance tracking
+- **End-to-End ML Pipeline**: Data ingestion, preprocessing, training & deployment
+- **Experiment Tracking**: MLflow-based experiment management
+- **REST API**: FastAPI prediction service
+- **Drift Detection**: Data & model drift monitoring via Evidently
+- **CI/CD**: GitHub Actions workflows for continuous testing & retraining
+- **Containerized**: Docker-ready deployment
+- **Monitoring Dashboard**: Real-time model performance tracking
+
+---
 
 ## 📁 Project Structure
 
-```
+```bash
 house-price-mlflow-pipeline/
 ├── .github/workflows/       # CI/CD pipelines
-├── data/                    # Data storage
-│   ├── raw/                # Raw datasets
-│   ├── processed/          # Processed data
-│   └── feature_store/      # Feature store
-├── src/                    # Source code
-│   ├── data/              # Data processing
-│   ├── models/            # Model training
-│   ├── monitoring/        # Drift detection
-│   └── api/               # FastAPI application
-├── config/                 # Configuration files
-├── docker/                # Docker files
-├── tests/                 # Unit tests
-└── notebooks/             # Jupyter notebooks
+├── data/                    # Raw & processed data
+├── src/                     # Source code
+│   ├── data/                # Data ingestion & preprocessing
+│   ├── models/              # Model training & evaluation
+│   ├── monitoring/          # Drift detection
+│   └── api/                 # FastAPI application
+├── config/                  # YAML configs
+├── docker/                  # Docker deployment files
+├── tests/                   # Unit tests
+└── notebooks/               # Jupyter notebooks
 ```
 
 ## 🚀 Quick Start
@@ -43,15 +43,9 @@ house-price-mlflow-pipeline/
 ### 1. Setup Environment
 
 ```bash
-# Clone the repository
 git clone <your-repo-url>
 cd house-price-mlflow-pipeline
 
-# Run installation script
-chmod +x install_setup.sh
-./install_setup.sh
-
-# Or install manually
 pip install --upgrade pip setuptools wheel
 pip install -r requirements.txt
 pip install -r requirements-dev.txt
@@ -62,7 +56,7 @@ pip install -e .
 
 ```bash
 make download-data
-# Or manually
+# or
 bash scripts/download_data.sh
 ```
 
@@ -70,7 +64,7 @@ bash scripts/download_data.sh
 
 ```bash
 make train
-# Or manually
+# or
 python src/models/train.py
 ```
 
