@@ -2,7 +2,7 @@
 project:
   name: "house-price-prediction"
   version: "0.1.0"
-  author: "Your Name"
+  author: "Agasthya R Kumar"
 
 data:
   raw_data_path: "data/raw/housing.csv"
