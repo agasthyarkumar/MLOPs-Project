@@ -6,8 +6,6 @@ wheel>=0.38.0
 numpy==1.24.3
 pandas==2.0.3
 scikit-learn==1.3.0
-# TensorFlow removed - causes dependency conflicts with FastAPI
-# Use scikit-learn for this project, add TensorFlow separately if needed
 
 # MLflow & Tracking
 mlflow==2.8.1
@@ -24,7 +22,8 @@ pyarrow==13.0.0
 openpyxl==3.1.2
 
 # Monitoring & Drift Detection
-evidently==0.4.10
+# Evidently updated to support Pydantic v2
+evidently>=0.4.16,<0.5.0
 scipy==1.11.3
 
 # Feature Store (Optional)
@@ -35,39 +34,6 @@ python-dotenv==1.0.0
 pyyaml==6.0.1
 requests==2.31.0
 boto3==1.28.85
-
-# Visualization
-matplotlib==3.7.3
-seaborn==0.12.2
-plotly==5.17.0
-
-
-# MLflow & Tracking
-mlflow==2.8.1
-databricks-cli==0.18.0
-
-# API & Deployment
-fastapi==0.104.1
-uvicorn[standard]==0.24.0
-pydantic==2.5.0
-python-multipart==0.0.6
-
-# Data Processing
-pyarrow==13.0.0
-openpyxl==3.1.2
-
-# Monitoring & Drift Detection
-evidently==0.4.10
-scipy==1.11.3
-
-# Feature Store (Optional - choose one)
-feast==0.35.0
-
-# Utilities
-python-dotenv==1.0.0
-pyyaml==6.0.1
-requests==2.31.0
-boto3==1.28.85  # For S3 storage if needed
 
 # Visualization
 matplotlib==3.7.3
