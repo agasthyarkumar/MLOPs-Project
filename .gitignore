@@ -58,3 +58,6 @@ Thumbs.db
 models/*.pkl
 models/*.h5
 models/*.joblib
+
+# Allow final exported model
+!models/model.pkl
