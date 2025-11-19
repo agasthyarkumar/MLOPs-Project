@@ -16,6 +16,15 @@ download-data:
 train:
 	python src/models/train.py
 
+train-improved:
+	python run_improved_pipeline.py
+
+train-ensemble:
+	python src/models/ensemble.py
+
+train-tuned:
+	python src/models/hyperparameter_tuning.py
+
 serve:
 	uvicorn src.api.main:app --reload --host 0.0.0.0 --port 8000
 
@@ -43,3 +52,18 @@ docker-build:
 
 docker-run:
 	docker run -p 8000:8000 house-price-api:latest
+
+# New convenience commands
+results:
+	cat models/production_model_metadata.yaml
+
+compare:
+	python -c "import pandas as pd; import yaml; \
+	with open('models/production_model_metadata.yaml') as f: \
+	    data = yaml.safe_load(f); \
+	    print('\n🏆 PRODUCTION MODEL'); \
+	    print(f\"Model: {data['model_name']}\"); \
+	    print(f\"RMSE: \$${data['test_rmse']:,.2f}\"); \
+	    print(f\"R²: {data['test_r2']:.4f}\"); \
+	    print(f\"Features: {data['n_features']}\"); \
+	    print(f\"Trained: {data['training_date']}\n\")"
