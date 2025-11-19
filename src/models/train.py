@@ -86,7 +86,7 @@ class ModelTrainer:
         
         else:
             logger.warning(f"Unknown model type: {self.model_type}. Using RandomForest.")
-            return RandomForestRegressor(**self.model_config['random_forest'])
+            return GradientBoostingRegressor(**self.model_config['gradient_boosting'])
     
     def calculate_metrics(self, y_true, y_pred) -> dict:
         """
