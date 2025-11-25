@@ -358,12 +358,13 @@ jobs:
       - name: 🐳 Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: 🔐 Log in to Docker Hub (if secrets available)
-        if: github.event_name != 'pull_request' && secrets.DOCKER_USERNAME != ''
+      - name: 🔐 Log in to Docker Hub
+        if: github.event_name != 'pull_request' && github.repository_owner == 'agasthyarkumar'
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
+        continue-on-error: true
 
       - name: 📥 Download model artifacts
         uses: actions/download-artifact@v3
@@ -386,12 +387,12 @@ jobs:
           docker rm test-container
           echo "✅ Docker container test passed!"
 
-      - name: 🚀 Push Docker image (if main branch)
-        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && secrets.DOCKER_USERNAME != ''
+      - name: 🚀 Push Docker image
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && github.repository_owner == 'agasthyarkumar'
         run: |
-          docker push mlops-house-price:latest
-          docker push mlops-house-price:${{ github.sha }}
-          echo "✅ Docker images pushed!"
+          docker push mlops-house-price:latest || echo "⚠️  Docker push skipped (credentials not configured)"
+          docker push mlops-house-price:${{ github.sha }} || echo "⚠️  Docker push skipped (credentials not configured)"
+        continue-on-error: true
 
       - name: ✅ Docker Build Complete
         run: echo "✅ Docker build completed!"
