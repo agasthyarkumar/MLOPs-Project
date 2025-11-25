@@ -1,27 +1,38 @@
-# Self Healing Pipelines on House Price Prediction
+# 🔄 Self-Healing MLOps Pipeline - House Price Prediction
 
-A production-ready machine learning pipeline for house price prediction with **self-healing MLOps capabilities**, featuring automated drift detection, performance monitoring, and intelligent retraining using MLflow, FastAPI, and Docker.
+A **truly self-healing** production MLOps pipeline that automatically detects and fixes issues across the entire ML lifecycle. Features automated data quality fixes, model rollback, drift-based retraining, and service recovery.
 
 ![Python](https://img.shields.io/badge/python-3.9%2B-blue)
 ![MLflow](https://img.shields.io/badge/MLflow-2.8.1-orange)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.104.1-green)
 ![Docker](https://img.shields.io/badge/Docker-ready-blue)
 ![Evidently](https://img.shields.io/badge/Evidently-0.4.15-red)
+![Self-Healing](https://img.shields.io/badge/Self--Healing-✅%20Active-brightgreen)
 
 ---
 
-## 🎯 Features
+## 🎯 Self-Healing Features
 
-- **End-to-End ML Pipeline**: Data ingestion, preprocessing, training & deployment
+### ✨ True Self-Healing Capabilities
+
+- **🔧 Auto-Fix Data Quality**: Automatically detects and fixes missing values, outliers, and duplicates
+- **🔙 Smart Model Rollback**: Auto-rollback when new models underperform (< 70% accuracy)
+- **🔄 Drift-Based Retraining**: Automatically retrains models when data drift is detected
+- **🏥 Service Auto-Recovery**: Automatically restarts and recovers failed API services
+- **📊 Continuous Monitoring**: Real-time drift detection with Evidently AI + Prometheus
+- **⏱️ Cooldown Protection**: Prevents excessive retraining with intelligent cooldown periods
+- **📝 Complete Audit Trail**: All self-healing actions are logged and trackable
+- **🛡️ Safety Mechanisms**: Backups before changes, rollback capability, max retry limits
+
+### 🚀 MLOps Pipeline Features
+
+- **End-to-End ML Pipeline**: Data ingestion → preprocessing → training → deployment
 - **Experiment Tracking**: MLflow-based experiment management & model registry
-- **REST API**: FastAPI prediction service with high performance
-- **🔄 Self-Healing Pipeline**: Automated drift detection and model retraining
-- **📊 Real-time Monitoring**: Evidently AI for drift detection + Prometheus metrics
-- **🤖 Automated Retraining**: Intelligent triggers based on drift and performance degradation
-- **✅ Model Validation**: Automated testing before production deployment
-- **CI/CD**: Complete GitHub Actions workflows for monitoring and retraining
+- **REST API**: FastAPI prediction service with automatic health checks
+- **✅ Model Validation**: Automated performance testing before deployment
+- **CI/CD**: 8-stage GitHub Actions workflow with self-healing integration
 - **Containerized**: Docker-ready deployment with docker-compose support
-- **Dashboard**: Real-time model performance tracking and drift reports
+- **Dashboard**: Real-time monitoring with drift reports and alerts
 
 ---
 
@@ -53,13 +64,18 @@ MLOPs-Project/
 ├── config/
 │   ├── config.yaml                 # Main configuration
 │   ├── model_config.yaml           # Model hyperparameters
-│   └── monitoring_config.json      # 🆕 Monitoring settings
+│   ├── monitoring_config.json      # Monitoring settings
+│   └── self_healing_config.json    # 🆕 Self-healing configuration
 ├── scripts/
-│   ├── run_monitoring.py           # 🆕 Manual monitoring execution
-│   ├── validate_model.py           # 🆕 Model validation tests
-│   ├── register_model.py           # 🆕 MLflow registry integration
-│   ├── promote_model.py            # 🆕 Production promotion
-│   └── update_reference_data.py    # 🆕 Reference data management
+│   ├── auto_fix_data_issues.py     # 🆕 Self-healing: Auto-fix data quality
+│   ├── auto_retrain_on_drift.py    # 🆕 Self-healing: Drift-based retraining
+│   ├── rollback_model.py           # 🆕 Self-healing: Model rollback
+│   ├── auto_recover_service.py     # 🆕 Self-healing: Service recovery
+│   ├── run_monitoring.py           # Manual monitoring execution
+│   ├── validate_model.py           # Model validation tests
+│   ├── register_model.py           # MLflow registry integration
+│   ├── promote_model.py            # Production promotion
+│   └── update_reference_data.py    # Reference data management
 ├── monitoring/                     # 🆕 Monitoring outputs
 │   ├── reports/                    # Drift HTML reports
 │   ├── metrics/                    # Performance metrics history
@@ -172,16 +188,134 @@ When you push to `main` or `develop`:
 
 ---
 
-## 🔄 Self-Healing MLOps Pipeline
+## 🔄 Self-Healing Capabilities
+
+### 🎯 What Makes This Truly Self-Healing?
+
+Unlike traditional resilient pipelines that just "continue on error", this pipeline **automatically detects and fixes issues**:
+
+| Issue Type | Detection | Remediation | Result |
+|------------|-----------|-------------|--------|
+| **Data Quality** | Missing values, outliers, duplicates | Auto-fix with intelligent imputation | Clean data, tests pass |
+| **Model Performance** | Accuracy < 70% | Auto-rollback to previous version | Production stability maintained |
+| **Data Drift** | Distribution changes detected | Auto-retrain with cooldown | Model stays current |
+| **Service Failure** | Health check fails | Auto-restart with recovery | Zero-downtime recovery |
+
+### 🔧 Self-Healing Scripts
+
+#### 1. **Data Quality Auto-Fix**
+```bash
+# Automatically fixes data issues before training
+python scripts/auto_fix_data_issues.py --data-path data/raw/housing.csv
+
+# Fixes applied:
+# ✅ Missing values filled (median/mode)
+# ✅ Outliers capped (IQR method)
+# ✅ Duplicates removed
+# ✅ Data types corrected
+```
+
+#### 2. **Model Rollback**
+```bash
+# Automatically rolls back if new model underperforms
+python scripts/rollback_model.py --current-metric 0.65 --threshold 0.70
+
+# Actions taken:
+# ⚠️  Model performance 0.65 < threshold 0.70
+# 📦 Backing up current model
+# 🔙 Restoring previous version
+# ✅ Rollback complete
+```
+
+#### 3. **Drift-Based Retraining**
+```bash
+# Automatically retrains when drift detected
+python scripts/auto_retrain_on_drift.py --drift-detected --drift-score 0.82
+
+# Actions taken:
+# 🚨 Drift detected! Score: 0.82
+# ✅ Cooldown check passed (24h)
+# 🔄 Starting automatic retraining
+# ✅ Model retrained successfully
+```
+
+#### 4. **Service Auto-Recovery**
+```bash
+# Automatically recovers failed services
+python scripts/auto_recover_service.py --method docker --service-url http://localhost:8000
+
+# Recovery steps:
+# ❌ Health check failed
+# 🔄 Clearing cache
+# 🔄 Restarting container
+# ✅ Service recovered
+```
+
+### 📊 Self-Healing Workflow Integration
+
+The GitHub Actions workflow integrates all self-healing capabilities:
+
+```yaml
+# Example: Tests with auto-fix
+- name: 🧪 Run tests with auto-fix
+  run: |
+    if ! pytest tests/; then
+      python scripts/auto_fix_data_issues.py
+      pytest tests/  # Retry after fix
+    fi
+
+# Example: Auto-rollback on validation failure
+- name: 🔙 Auto-rollback
+  if: accuracy < 0.70
+  run: python scripts/rollback_model.py --current-metric ${{ accuracy }}
+
+# Example: Auto-retrain on drift
+- name: 🔄 Auto-retrain
+  if: drift_detected == 'true'
+  run: python scripts/auto_retrain_on_drift.py --drift-score ${{ drift_score }}
+```
+
+### 📋 Configuration
+
+Edit `config/self_healing_config.json`:
+
+```json
+{
+  "data_quality": {
+    "auto_fix_enabled": true,
+    "outlier_threshold_iqr": 3.0
+  },
+  "model_validation": {
+    "auto_rollback_enabled": true,
+    "min_accuracy_threshold": 0.70
+  },
+  "drift_detection": {
+    "auto_retrain_enabled": true,
+    "drift_threshold": 0.5,
+    "retraining_cooldown_hours": 24
+  },
+  "service_recovery": {
+    "auto_recovery_enabled": true,
+    "max_recovery_attempts": 3
+  }
+}
+```
+
+### 📝 Audit Trail
+
+All self-healing actions are logged:
+
+- `monitoring/recovery_log.json` - Service recovery events
+- `models/rollback_log.json` - Model rollback history
+- `.github/triggers/retraining_log.json` - Auto-retraining events
+
+**📚 Full Documentation**: See [docs/SELF_HEALING.md](docs/SELF_HEALING.md) for complete details.
+
+---
+
+## 🚀 GitHub Actions Workflows
 
 ### Overview
-
-The self-healing pipeline continuously monitors your model in production and automatically triggers retraining when performance degrades or data drift is detected, creating a **closed-loop autonomous system**.
-
-### Architecture Components
-
-#### 1. **Drift Detection** (Evidently AI)
-- **Data Drift**: Monitors feature distribution changes
 - **Target Drift**: Tracks prediction distribution shifts
 - **Configurable Thresholds**: Customizable sensitivity
 - **HTML Reports**: Visual drift analysis

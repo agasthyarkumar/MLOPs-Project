@@ -1,0 +1,83 @@
+{
+  "self_healing": {
+    "enabled": true,
+    "description": "Comprehensive self-healing configuration for MLOps pipeline"
+  },
+  
+  "data_quality": {
+    "auto_fix_enabled": true,
+    "fix_missing_values": true,
+    "fix_outliers": true,
+    "fix_duplicates": true,
+    "outlier_threshold_iqr": 3.0,
+    "validation_on_ingestion": true
+  },
+  
+  "model_training": {
+    "auto_backup_enabled": true,
+    "backup_retention_days": 30,
+    "max_backups": 10,
+    "auto_retry_on_failure": true,
+    "max_training_retries": 3
+  },
+  
+  "model_validation": {
+    "auto_rollback_enabled": true,
+    "min_accuracy_threshold": 0.70,
+    "min_f1_threshold": 0.65,
+    "rollback_on_degradation": true,
+    "performance_degradation_threshold": 0.05
+  },
+  
+  "drift_detection": {
+    "auto_retrain_enabled": true,
+    "drift_threshold": 0.5,
+    "retraining_cooldown_hours": 24,
+    "min_samples_for_detection": 100,
+    "alert_on_drift": true,
+    "monitor_features": true,
+    "monitor_predictions": true
+  },
+  
+  "service_recovery": {
+    "auto_recovery_enabled": true,
+    "health_check_interval_seconds": 60,
+    "max_recovery_attempts": 3,
+    "recovery_delay_seconds": 5,
+    "recovery_methods": ["restart", "clear_cache", "rollback"],
+    "alert_on_failure": true
+  },
+  
+  "monitoring": {
+    "reference_data_path": "data/reference/reference_data.csv",
+    "production_data_path": "data/production/",
+    "reports_dir": "monitoring/reports",
+    "metrics_dir": "monitoring/metrics",
+    "alerts_dir": "monitoring/alerts",
+    "batch_monitoring_enabled": true,
+    "real_time_monitoring_enabled": false
+  },
+  
+  "logging": {
+    "recovery_log_path": "monitoring/recovery_log.json",
+    "rollback_log_path": "models/rollback_log.json",
+    "retraining_log_path": ".github/triggers/retraining_log.json",
+    "retention_days": 90
+  },
+  
+  "notifications": {
+    "enabled": false,
+    "email_alerts": false,
+    "slack_webhook": null,
+    "alert_on_drift": true,
+    "alert_on_rollback": true,
+    "alert_on_recovery": true
+  },
+  
+  "ci_cd": {
+    "continue_on_error": false,
+    "fail_fast": false,
+    "auto_fix_tests": true,
+    "parallel_execution": true
+  }
+}
