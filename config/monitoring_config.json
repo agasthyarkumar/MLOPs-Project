@@ -1,0 +1,5 @@
+{
+  "retraining_cooldown_hours": 0,
+  "enable_auto_retrain": true,
+  "drift_threshold": 0.5
+}
