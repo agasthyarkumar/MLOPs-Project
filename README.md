@@ -146,6 +146,8 @@ When you push to the repository, you'll see **4 workflows** in GitHub Actions:
   7. 🐳 **Docker Build** - Container creation
   8. 📋 **Deployment Summary** - Final report
 
+**Note**: All workflows use GitHub Actions artifact actions v4 for improved performance and reliability.
+
 #### 2. **🔍 CI - Continuous Integration** (`ci.yml`)
 - **Trigger**: Pull Requests, Manual
 - **Purpose**: Multi-version Python testing
