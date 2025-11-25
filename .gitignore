@@ -57,7 +57,7 @@ data/production/*.csv
 
 # OS
 .DS_Store
-Thumbs.db
+Thumbs.db   
 
 # Models - DO NOT commit large binary files
 models/*.pkl

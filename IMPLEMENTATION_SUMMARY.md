@@ -167,6 +167,40 @@ Edit `config/self_healing_config.json` to customize:
 
 ## 🚀 Quick Start
 
+### Setup Options
+
+#### Option 1: One-Command Setup (Recommended)
+```bash
+# Complete setup with virtual environment
+make setup-all
+
+# Or use the quick start script
+chmod +x quick_start.sh scripts/setup_venv.sh
+./quick_start.sh
+```
+
+#### Option 2: Docker (Production)
+```bash
+# Start all services
+make docker-compose
+
+# Stop services
+make docker-compose-down
+```
+
+#### Option 3: Manual Virtual Environment Setup
+```bash
+# Create and activate virtual environment
+make venv
+source venv/bin/activate
+
+# Install dependencies
+make install
+
+# Setup directories
+make setup
+```
+
 ### Run Self-Healing Tests
 ```bash
 python scripts/test_self_healing.py

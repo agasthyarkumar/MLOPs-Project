@@ -1,4 +1,10 @@
-.PHONY: install setup train serve test clean self-healing help
+.PHONY: install setup train serve test clean self-healing help venv
+
+# Python virtual environment
+VENV := venv
+PYTHON := $(VENV)/bin/python
+PIP := $(VENV)/bin/pip
+ACTIVATE := source $(VENV)/bin/activate
 
 # Default target - show help
 help:
@@ -6,10 +12,16 @@ help:
 	@echo "║       🔄 Self-Healing MLOps Pipeline - Make Commands       ║"
 	@echo "╠════════════════════════════════════════════════════════════╣"
 	@echo "║                                                            ║"
+	@echo "║  🐍 VIRTUAL ENVIRONMENT                                    ║"
+	@echo "║  make venv             - Create Python virtual environment ║"
+	@echo "║  make venv-activate    - Show activation command           ║"
+	@echo "║  make venv-clean       - Remove virtual environment        ║"
+	@echo "║                                                            ║"
 	@echo "║  📦 SETUP & INSTALLATION                                   ║"
 	@echo "║  make install          - Install all dependencies          ║"
 	@echo "║  make setup            - Create directory structure        ║"
 	@echo "║  make download-data    - Download dataset                  ║"
+	@echo "║  make setup-all        - Complete setup (venv + install)   ║"
 	@echo "║                                                            ║"
 	@echo "║  🎯 MODEL TRAINING                                         ║"
 	@echo "║  make train            - Train basic model                 ║"
@@ -22,6 +34,7 @@ help:
 	@echo "║  make mlflow-ui        - Start MLflow UI                   ║"
 	@echo "║  make docker-build     - Build Docker image                ║"
 	@echo "║  make docker-run       - Run Docker container              ║"
+	@echo "║  make docker-compose   - Run with docker-compose           ║"
 	@echo "║                                                            ║"
 	@echo "║  🔄 SELF-HEALING (NEW!)                                    ║"
 	@echo "║  make test-self-healing   - Test all self-healing features ║"
@@ -41,22 +54,70 @@ help:
 	@echo "║  make results          - Show model results                ║"
 	@echo "║  make compare          - Compare model metrics             ║"
 	@echo "║  make clean            - Clean temporary files             ║"
+	@echo "║  make clean-all        - Clean everything including venv   ║"
 	@echo "║                                                            ║"
 	@echo "╚════════════════════════════════════════════════════════════╝"
 	@echo ""
-	@echo "💡 Quick Start: make install && make setup && make train"
+	@echo "💡 Quick Start (Virtual Env): make setup-all && make train"
+	@echo "🐳 Quick Start (Docker): make docker-compose"
 	@echo "🔄 Self-Healing: make help-self-healing"
 	@echo ""
 
+# ============================================================================
+# 🐍 VIRTUAL ENVIRONMENT COMMANDS
+# ============================================================================
+
+venv:
+	@echo "🐍 Creating Python virtual environment..."
+	python3 -m venv $(VENV)
+	$(PIP) install --upgrade pip setuptools wheel
+	@echo "✅ Virtual environment created!"
+	@echo "Activate with: source $(VENV)/bin/activate"
+
+venv-activate:
+	@echo "To activate virtual environment, run:"
+	@echo "  source $(VENV)/bin/activate"
+
+venv-clean:
+	@echo "🗑️  Removing virtual environment..."
+	rm -rf $(VENV)
+	@echo "✅ Virtual environment removed!"
+
+# ============================================================================
+# 📦 SETUP & INSTALLATION
+# ============================================================================
+
 install:
+	@echo "📦 Installing dependencies..."
 	pip install --upgrade pip setuptools wheel
 	pip install -r requirements.txt
 	pip install -r requirements-dev.txt
 	pip install -e .
+	@echo "✅ Installation complete!"
 
 setup:
-	mkdir -p data/{raw,processed,feature_store} mlflow
-	chmod +x scripts/*.sh
+	@echo "📁 Creating directory structure..."
+	mkdir -p data/{raw,processed,feature_store,reference,production} \
+	         models/backups \
+	         mlflow \
+	         monitoring/{reports,metrics,alerts} \
+	         logs \
+	         config \
+	         .github/triggers
+	chmod +x scripts/*.sh scripts/*.py 2>/dev/null || true
+	@echo "✅ Directory structure created!"
+
+setup-all: venv
+	@echo "🚀 Running complete setup..."
+	$(PIP) install --upgrade pip setuptools wheel
+	$(PIP) install -r requirements.txt
+	$(PIP) install -r requirements-dev.txt
+	$(PIP) install -e .
+	@make setup
+	@echo ""
+	@echo "✅ Complete setup finished!"
+	@echo "Activate environment: source venv/bin/activate"
+	@echo "Train model: make train"
 
 download-data:
 	bash scripts/download_data.sh
@@ -91,15 +152,38 @@ lint:
 	pylint src/
 
 clean:
-	find . -type d -name __pycache__ -exec rm -rf {} +
+	@echo "🧹 Cleaning temporary files..."
+	find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
 	find . -type f -name "*.pyc" -delete
-	rm -rf build/ dist/ *.egg-info
+	find . -type f -name "*.pyo" -delete
+	find . -type d -name ".pytest_cache" -exec rm -rf {} + 2>/dev/null || true
+	find . -type d -name "htmlcov" -exec rm -rf {} + 2>/dev/null || true
+	find . -type d -name "*.egg-info" -exec rm -rf {} + 2>/dev/null || true
+	rm -rf build/ dist/ .coverage
+	@echo "✅ Cleanup complete!"
+
+clean-all: clean venv-clean
+	@echo "🗑️  Removing all generated files..."
+	rm -rf mlflow/ mlruns/ monitoring/reports/* monitoring/metrics/* monitoring/alerts/*
+	@echo "✅ Complete cleanup done!"
 
 docker-build:
 	docker build -f docker/Dockerfile -t house-price-api:latest .
 
 docker-run:
 	docker run -p 8000:8000 house-price-api:latest
+
+docker-compose:
+	@echo "🐳 Starting services with docker-compose..."
+	cd docker && docker-compose up -d
+	@echo "✅ Services started!"
+	@echo "📊 MLflow UI: http://localhost:5000"
+	@echo "🚀 API: http://localhost:8000"
+
+docker-compose-down:
+	@echo "🛑 Stopping docker-compose services..."
+	cd docker && docker-compose down
+	@echo "✅ Services stopped!"
 
 # New convenience commands
 results:

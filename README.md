@@ -89,28 +89,73 @@ MLOPs-Project/
 
 ## 🚀 Quick Start
 
-### 1. Setup Environment
+### Option 1: Python Virtual Environment (Recommended for Development)
+
+```bash
+# Clone repository
+git clone <your-repo-url>
+cd MLOPs-Project
+
+# Complete setup with one command
+make setup-all
+
+# Activate virtual environment
+source venv/bin/activate
+
+# Train model
+make train
+
+# Start services
+make serve           # API on port 8000
+make mlflow-ui       # MLflow on port 5000
+```
+
+**Or use the quick start script:**
+
+```bash
+chmod +x quick_start.sh scripts/setup_venv.sh
+./quick_start.sh
+```
+
+### Option 2: Docker (Recommended for Production)
+
+```bash
+# Clone repository
+git clone <your-repo-url>
+cd MLOPs-Project
+
+# Start all services with docker-compose
+make docker-compose
+
+# Services will be available at:
+# - API: http://localhost:8000
+# - MLflow UI: http://localhost:5000
+
+# Stop services
+make docker-compose-down
+```
+
+### Option 3: Manual Setup
 
 ```bash
 git clone <your-repo-url>
 cd MLOPs-Project
 
+# Create virtual environment
+make venv
+source venv/bin/activate
+
 # Install dependencies
-pip install --upgrade pip setuptools wheel
-pip install -r requirements.txt
-pip install -r requirements-dev.txt
-pip install -e .
-```
+make install
 
-### 2. Download Data
+# Create directory structure
+make setup
 
-```bash
+# Download data
 make download-data
-# or
-bash scripts/download_data.sh
 ```
 
-### 3. Prepare Reference Data for Monitoring
+### 2. Prepare Reference Data for Monitoring
 
 ```bash
 # Create reference dataset from training data
