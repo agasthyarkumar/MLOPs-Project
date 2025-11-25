@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Dict, Optional, Tuple
 
 import pandas as pd
-from evidently.metric_preset import DataDriftPreset, TargetDriftPreset
+from evidently import metric_preset
 from evidently.report import Report
 
 logger = logging.getLogger(__name__)
@@ -70,13 +70,13 @@ class DriftDetector:
 
         # Create drift report
         report = Report(metrics=[
-            DataDriftPreset(),
+            metric_preset.DataDriftPreset(),
         ])
         
         if target_column and target_column in current_data.columns:
             report = Report(metrics=[
-                DataDriftPreset(),
-                TargetDriftPreset(),
+                metric_preset.DataDriftPreset(),
+                metric_preset.TargetDriftPreset(),
             ])
 
         report.run(
