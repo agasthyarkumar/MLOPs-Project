@@ -1,10 +1,15 @@
-name: Production Monitoring
+name: Monitoring - Production Model
 
 on:
   schedule:
     # Run monitoring every 6 hours
     - cron: '0 */6 * * *'
   workflow_dispatch:
+    inputs:
+      data_path:
+        description: 'Path to production data'
+        required: false
+        default: 'data/production/current_batch.csv'
 
 env:
   PYTHON_VERSION: '3.10'
@@ -32,17 +37,23 @@ jobs:
       - name: Fetch production data
         run: |
           # Add logic to fetch production data
-          # This could be from logs, database, or monitoring system
+          mkdir -p data/production
           echo "Fetching production data for monitoring..."
-          # Example: python scripts/fetch_production_data.py
+          # Generate sample data for demonstration
+          python -c "
+          from sklearn.datasets import fetch_california_housing
+          import pandas as pd
+          import numpy as np
+          data = fetch_california_housing(as_frame=True)
+          df = data.frame.sample(n=1000, random_state=42)
+          df.to_csv('data/production/current_batch.csv', index=False)
+          "
 
       - name: Run monitoring checks
         id: monitor
         run: |
           python scripts/run_monitoring.py \
-            --data-path data/production/current_batch.csv \
-            --predictions-path data/production/predictions.csv \
-            --labels-path data/production/labels.csv \
+            --data-path ${{ github.event.inputs.data_path || 'data/production/current_batch.csv' }} \
             --model-version ${{ github.sha }}
         continue-on-error: true
 
@@ -50,22 +61,14 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v3
         with:
-          name: monitoring-reports
+          name: monitoring-reports-${{ github.run_number }}
           path: |
             monitoring/reports/
             monitoring/metrics/
             monitoring/alerts/
 
       - name: Check if retraining triggered
-        if: steps.monitor.outcome == 'failure' && steps.monitor.outputs.exit_code == '2'
-        run: |
-          echo "Monitoring detected issues - retraining workflow will be triggered"
-
-      - name: Commit trigger file
         if: steps.monitor.outcome == 'failure'
         run: |
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
-          git add .github/triggers/retrain_trigger.json || true
-          git commit -m "Trigger automated retraining [skip ci]" || true
-          git push || true
+          echo "⚠️  Monitoring detected issues - check artifacts for details"
+          echo "Consider triggering retraining workflow if needed"

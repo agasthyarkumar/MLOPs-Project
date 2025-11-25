@@ -1,42 +1,75 @@
-# 🏠 MLflow House Price Prediction Pipeline
+# Self Healing Pipelines on House Price Prediction
 
-A production-ready machine learning pipeline for house price prediction with full MLOps lifecycle management using MLflow, FastAPI, and Docker.
+A production-ready machine learning pipeline for house price prediction with **self-healing MLOps capabilities**, featuring automated drift detection, performance monitoring, and intelligent retraining using MLflow, FastAPI, and Docker.
 
 ![Python](https://img.shields.io/badge/python-3.9%2B-blue)
 ![MLflow](https://img.shields.io/badge/MLflow-2.8.1-orange)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.104.1-green)
 ![Docker](https://img.shields.io/badge/Docker-ready-blue)
+![Evidently](https://img.shields.io/badge/Evidently-0.4.15-red)
 
 ---
 
 ## 🎯 Features
 
 - **End-to-End ML Pipeline**: Data ingestion, preprocessing, training & deployment
-- **Experiment Tracking**: MLflow-based experiment management
-- **REST API**: FastAPI prediction service
-- **Drift Detection**: Data & model drift monitoring via Evidently
-- **CI/CD**: GitHub Actions workflows for continuous testing & retraining
-- **Containerized**: Docker-ready deployment
-- **Monitoring Dashboard**: Real-time model performance tracking
+- **Experiment Tracking**: MLflow-based experiment management & model registry
+- **REST API**: FastAPI prediction service with high performance
+- **🔄 Self-Healing Pipeline**: Automated drift detection and model retraining
+- **📊 Real-time Monitoring**: Evidently AI for drift detection + Prometheus metrics
+- **🤖 Automated Retraining**: Intelligent triggers based on drift and performance degradation
+- **✅ Model Validation**: Automated testing before production deployment
+- **CI/CD**: Complete GitHub Actions workflows for monitoring and retraining
+- **Containerized**: Docker-ready deployment with docker-compose support
+- **Dashboard**: Real-time model performance tracking and drift reports
 
 ---
 
 ## 📁 Project Structure
 
 ```bash
-house-price-mlflow-pipeline/
-├── .github/workflows/       # CI/CD pipelines
-├── data/                    # Raw & processed data
-├── src/                     # Source code
-│   ├── data/                # Data ingestion & preprocessing
-│   ├── models/              # Model training & evaluation
-│   ├── monitoring/          # Drift detection
-│   └── api/                 # FastAPI application
-├── config/                  # YAML configs
-├── docker/                  # Docker deployment files
-├── tests/                   # Unit tests
-└── notebooks/               # Jupyter notebooks
+MLOPs-Project/
+├── .github/
+│   ├── workflows/
+│   │   ├── main.yml                # 🆕 Complete pipeline (all stages)
+│   │   ├── ci.yml                  # Continuous integration
+│   │   ├── monitoring.yml          # Production monitoring (every 6h)
+│   │   ├── retrain.yml             # Automated retraining pipeline
+│   │   └── retrain_deploy.yml      # Manual deployment
+│   └── triggers/                   # Retraining trigger files
+├── data/
+│   ├── raw/                        # Original datasets
+│   ├── processed/                  # Preprocessed data
+│   ├── reference/                  # Baseline data for drift detection
+│   └── production/                 # Production data batches
+├── src/
+│   ├── data/                       # Data ingestion & preprocessing
+│   ├── models/                     # Model training & evaluation
+│   ├── monitoring/                 # 🆕 Monitoring module
+│   │   ├── drift_detector.py       # Evidently AI drift detection
+│   │   ├── performance_monitor.py  # Performance metrics tracking
+│   │   └── monitoring_service.py   # Main monitoring orchestrator
+│   └── api/                        # FastAPI application
+├── config/
+│   ├── config.yaml                 # Main configuration
+│   ├── model_config.yaml           # Model hyperparameters
+│   └── monitoring_config.json      # 🆕 Monitoring settings
+├── scripts/
+│   ├── run_monitoring.py           # 🆕 Manual monitoring execution
+│   ├── validate_model.py           # 🆕 Model validation tests
+│   ├── register_model.py           # 🆕 MLflow registry integration
+│   ├── promote_model.py            # 🆕 Production promotion
+│   └── update_reference_data.py    # 🆕 Reference data management
+├── monitoring/                     # 🆕 Monitoring outputs
+│   ├── reports/                    # Drift HTML reports
+│   ├── metrics/                    # Performance metrics history
+│   └── alerts/                     # Alert notifications
+├── docker/                         # Docker deployment files
+├── tests/                          # Unit & integration tests
+└── notebooks/                      # Jupyter notebooks
 ```
+
+---
 
 ## 🚀 Quick Start
 
@@ -44,8 +77,9 @@ house-price-mlflow-pipeline/
 
 ```bash
 git clone <your-repo-url>
-cd house-price-mlflow-pipeline
+cd MLOPs-Project
 
+# Install dependencies
 pip install --upgrade pip setuptools wheel
 pip install -r requirements.txt
 pip install -r requirements-dev.txt
@@ -60,7 +94,15 @@ make download-data
 bash scripts/download_data.sh
 ```
 
-### 3. Train Model
+### 3. Prepare Reference Data for Monitoring
+
+```bash
+# Create reference dataset from training data
+mkdir -p data/reference
+cp data/processed/train_data.csv data/reference/reference_data.csv
+```
+
+### 4. Train Model
 
 ```bash
 make train
@@ -68,197 +110,127 @@ make train
 python src/models/train.py
 ```
 
-### 4. Start MLflow UI
+### 5. Start MLflow UI
 
 ```bash
 make mlflow-ui
 # Access at http://localhost:5000
 ```
 
-### 5. Start API Server
+### 6. Start API Server
 
 ```bash
 make serve
 # API available at http://localhost:8000
-# Docs at http://localhost:8000/docs
+# Interactive docs at http://localhost:8000/docs
 ```
 
-## 📊 Usage Examples
+---
 
-### Python API
+## 🔄 GitHub Actions Workflows
 
-```python
-from src.data.ingestion import DataIngestion
-from src.data.preprocessing import DataPreprocessor
-from src.models.train import ModelTrainer
+### Available Workflows
 
-# Load and preprocess data
-ingestion = DataIngestion()
-df = ingestion.ingest()
+When you push to the repository, you'll see **4 workflows** in GitHub Actions:
 
-preprocessor = DataPreprocessor()
-X_train, X_test, y_train, y_test = preprocessor.preprocess(df)
+#### 1. **🚀 Complete MLOps Pipeline** (`main.yml`)
+- **Trigger**: Push to `main` or `develop`, Pull Requests
+- **Purpose**: Runs all stages sequentially
+- **Stages**:
+  1. 🔍 **CI** - Lint, Test & Validate
+  2. 🎯 **Model Training** - Train with MLflow
+  3. ✅ **Model Validation** - Performance checks
+  4. 📊 **Monitoring Setup** - Initialize infrastructure
+  5. 🔍 **Monitoring Check** - Drift detection
+  6. 🚀 **API Build & Test** - Test endpoints
+  7. 🐳 **Docker Build** - Container creation
+  8. 📋 **Deployment Summary** - Final report
 
-# Train model
-trainer = ModelTrainer()
-model = trainer.train(X_train, X_test, y_train, y_test)
-```
+#### 2. **🔍 CI - Continuous Integration** (`ci.yml`)
+- **Trigger**: Pull Requests, Manual
+- **Purpose**: Multi-version Python testing
+- **Tests**: Python 3.9, 3.10, 3.11
 
-### REST API
+#### 3. **📊 Monitoring - Production Model** (`monitoring.yml`)
+- **Trigger**: Every 6 hours, Manual
+- **Purpose**: Monitor production model performance
+- **Actions**: Drift detection, performance tracking, alert generation
 
-```bash
-# Health check
-curl http://localhost:8000/health
+#### 4. **🔄 Retrain - Automated Retraining** (`retrain.yml`)
+- **Trigger**: Manual, Repository dispatch from monitoring
+- **Purpose**: Retrain and deploy new models
+- **Stages**: Fetch data → Train → Validate → Register → Promote
 
-# Make prediction
-curl -X POST "http://localhost:8000/predict" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "longitude": -122.23,
-    "latitude": 37.88,
-    "housing_median_age": 41.0,
-    "total_rooms": 880.0,
-    "total_bedrooms": 129.0,
-    "population": 322.0,
-    "households": 126.0,
-    "median_income": 8.3252,
-    "ocean_proximity": "NEAR BAY"
-  }'
-```
+### Workflow Execution on Push
 
-### Python Requests
+When you push to `main` or `develop`:
+- The **🚀 Complete MLOps Pipeline** (`main.yml`) runs automatically.
+- This pipeline includes all stages: CI, Model Training, Validation, Monitoring Setup, Monitoring Check, API Build & Test, Docker Build, and Deployment Summary.
+- You can monitor the progress in the Actions tab of your GitHub repository.
 
-```python
-import requests
+---
 
-url = "http://localhost:8000/predict"
-data = {
-    "longitude": -122.23,
-    "latitude": 37.88,
-    "housing_median_age": 41.0,
-    "total_rooms": 880.0,
-    "total_bedrooms": 129.0,
-    "population": 322.0,
-    "households": 126.0,
-    "median_income": 8.3252,
-    "ocean_proximity": "NEAR BAY"
-}
+## 🔄 Self-Healing MLOps Pipeline
 
-response = requests.post(url, json=data)
-print(response.json())
-```
+### Overview
 
-## 🐳 Docker Deployment
+The self-healing pipeline continuously monitors your model in production and automatically triggers retraining when performance degrades or data drift is detected, creating a **closed-loop autonomous system**.
 
-### Build and Run
+### Architecture Components
 
-```bash
-# Build image
-make docker-build
+#### 1. **Drift Detection** (Evidently AI)
+- **Data Drift**: Monitors feature distribution changes
+- **Target Drift**: Tracks prediction distribution shifts
+- **Configurable Thresholds**: Customizable sensitivity
+- **HTML Reports**: Visual drift analysis
 
-# Run container
-make docker-run
+#### 2. **Performance Monitoring** (Prometheus + Custom)
+- **Key Metrics**: Accuracy, F1, Precision, Recall
+- **Historical Tracking**: Time-series performance data
+- **Degradation Detection**: Automatic alerts on performance drops
+- **Prometheus Integration**: Optional pushgateway support
 
-# Or use docker-compose
-cd docker
-docker-compose up -d
-```
-
-### Access Services
-
-- API: http://localhost:8000
-- MLflow UI: http://localhost:5000
-
-## 🔧 Configuration
-
-### Model Configuration (`config/model_config.yaml`)
-
-```yaml
-random_forest:
-  n_estimators: 100
-  max_depth: 20
-  min_samples_split: 5
-```
-
-### Main Configuration (`config/config.yaml`)
-
-```yaml
-model:
-  type: "random_forest"
-  target_column: "median_house_value"
-
-mlflow:
-  tracking_uri: "./mlflow"
-  experiment_name: "house-price-prediction"
-```
-
-## 📈 Monitoring & Drift Detection
-
-```python
-from src.monitoring.drift_detection import DriftDetector
-
-# Initialize detector
-detector = DriftDetector()
-
-# Detect drift
-drift_summary = detector.detect_data_drift(
-    current_data=new_data,
-    reference_data=training_data
-)
-
-print(f"Drift Detected: {drift_summary['drift_detected']}")
-```
-
-## Self-Healing MLOps Pipeline
-
-This project implements an automated self-healing MLOps pipeline that continuously monitors model performance and triggers retraining when needed.
-
-### Monitoring Architecture
-
-The monitoring system consists of three main components:
-
-1. **Drift Detection** (Evidently AI)
-   - Monitors data distribution changes
-   - Detects feature drift and target drift
-   - Configurable drift thresholds
-
-2. **Performance Monitoring** (Prometheus + Custom Metrics)
-   - Tracks accuracy, F1, precision, and recall
-   - Detects performance degradation
-   - Historical metrics tracking
-
-3. **Automated Retraining**
-   - Triggered by drift or performance degradation
-   - Automated model validation
-   - MLflow Model Registry integration
-   - Cooldown period to prevent excessive retraining
+#### 3. **Automated Retraining**
+- **Smart Triggers**: Based on drift + performance thresholds
+- **Cooldown Period**: Prevents excessive retraining (24h default)
+- **MLflow Integration**: Full experiment tracking
+- **Model Registry**: Automatic versioning and staging
+- **Validation Gates**: Quality checks before deployment
 
 ### Setup Monitoring
 
-1. Install monitoring dependencies:
-```bash
-pip install -r requirements.txt
-```
+#### 1. Configure Monitoring Parameters
 
-2. Configure monitoring parameters:
-```bash
-# Edit config/monitoring_config.json
+Edit `config/monitoring_config.json`:
+
+```json
 {
+  "reference_data_path": "data/reference/reference_data.csv",
   "drift_threshold": 0.5,
   "performance_threshold": 0.75,
-  "retraining_cooldown_hours": 24
+  "reports_dir": "monitoring/reports",
+  "metrics_dir": "monitoring/metrics",
+  "alerts_dir": "monitoring/alerts",
+  "retraining_cooldown_hours": 24,
+  "enable_auto_retrain": true,
+  "monitoring_schedule": "0 */6 * * *",
+  "batch_monitoring_enabled": true,
+  "prometheus_gateway": null
 }
 ```
 
-3. Prepare reference data:
+#### 2. Initialize Monitoring Structure
+
 ```bash
-# Copy your baseline training data
-cp data/processed/train_data.csv data/reference/reference_data.csv
+mkdir -p monitoring/{reports,metrics,alerts}
+mkdir -p data/{reference,production}
+mkdir -p .github/triggers
 ```
 
 ### Running Monitoring
 
 #### Manual Monitoring Check
+
 ```bash
 python scripts/run_monitoring.py \
   --data-path data/production/current_batch.csv \

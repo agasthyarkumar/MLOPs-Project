@@ -1,103 +1,55 @@
-name: CI Pipeline
+name: CI - Continuous Integration
 
 on:
-  push:
-    branches: [ main, develop ]
   pull_request:
     branches: [ main, develop ]
+  workflow_dispatch:
+  # Runs as part of main.yml on push
+
+env:
+  PYTHON_VERSION: '3.10'
 
 jobs:
-  test:
+  lint-and-test:
+    name: Lint & Test
     runs-on: ubuntu-latest
-    timeout-minutes: 20
     
     strategy:
       matrix:
-        python-version: ['3.10']  # Single version for faster builds
+        python-version: ['3.9', '3.10', '3.11']
     
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
-    
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ matrix.python-version }}
-    
-    - name: Cache pip packages
-      uses: actions/cache@v3
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-        restore-keys: |
-          ${{ runner.os }}-pip-
-    
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip setuptools wheel
-        pip install -r requirements.txt --prefer-binary
-        pip install -r requirements-dev.txt --prefer-binary
-        pip install -e .
-    
-    - name: Lint with flake8
-      run: |
-        # Stop the build if there are Python syntax errors or undefined names
-        flake8 src/ --count --select=E9,F63,F7,F82 --show-source --statistics --exit-zero
-      continue-on-error: true
-    
-    - name: Format check with black
-      run: |
-        black --check src/ tests/ || true
-      continue-on-error: true
-    
-    - name: Run basic tests
-      run: |
-        pytest tests/ -v -x --tb=short || true
-      continue-on-error: true
-    
-    - name: Test imports
-      run: |
-        python -c "import src.data.ingestion; print('✓ Ingestion module OK')"
-        python -c "import src.data.preprocessing; print('✓ Preprocessing module OK')"
-        python -c "import src.models.train; print('✓ Training module OK')"
-        python -c "import src.api.main; print('✓ API module OK')"
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-  lint-fast:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
-    
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.10'
-    
-    - name: Install linting tools
-      run: |
-        python -m pip install --upgrade pip
-        pip install flake8 black
-    
-    - name: Run flake8
-      run: |
-        flake8 src/ --count --statistics --exit-zero
-      continue-on-error: true
-    
-    - name: Check formatting
-      run: |
-        black --check src/ tests/ || echo "Formatting issues found (non-blocking)"
-      continue-on-error: true
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
 
-  build-status:
-    runs-on: ubuntu-latest
-    needs: [test, lint-fast]
-    if: always()
-    
-    steps:
-    - name: Check build status
-      run: |
-        echo "Build completed!"
-        echo "Test job: ${{ needs.test.result }}"
-        echo "Lint job: ${{ needs.lint-fast.result }}"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+          pip install -e .
+
+      - name: Code formatting check
+        run: |
+          pip install black
+          black --check src/ tests/ scripts/
+
+      - name: Linting
+        run: |
+          pip install flake8
+          flake8 src/ tests/ scripts/ --max-line-length=120
+
+      - name: Run tests
+        run: |
+          pytest tests/ -v --cov=src --cov-report=xml
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage.xml

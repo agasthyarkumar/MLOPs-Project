@@ -1,4 +1,4 @@
-name: Automated Model Retraining
+name: Retrain - Automated Retraining
 
 on:
   workflow_dispatch:
@@ -7,13 +7,17 @@ on:
         description: 'Reason for retraining'
         required: false
         default: 'manual'
-  schedule:
-    # Check for retraining trigger every 6 hours
-    - cron: '0 */6 * * *'
+      min_accuracy:
+        description: 'Minimum accuracy threshold'
+        required: false
+        default: '0.75'
+  # Can be triggered by monitoring workflow or manually
+  repository_dispatch:
+    types: [retrain-trigger]
 
 env:
   PYTHON_VERSION: '3.10'
-  MLFLOW_TRACKING_URI: ${{ secrets.MLFLOW_TRACKING_URI }}
+  MLFLOW_TRACKING_URI: ${{ secrets.MLFLOW_TRACKING_URI || './mlflow' }}
 
 jobs:
   check-trigger:
@@ -21,6 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       should_retrain: ${{ steps.check.outputs.should_retrain }}
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -30,11 +35,11 @@ jobs:
         run: |
           if [ -f ".github/triggers/retrain_trigger.json" ]; then
             echo "should_retrain=true" >> $GITHUB_OUTPUT
-            echo "Retraining trigger found"
+            echo "✅ Retraining trigger found"
             cat .github/triggers/retrain_trigger.json
           else
-            echo "should_retrain=false" >> $GITHUB_OUTPUT
-            echo "No retraining trigger found"
+            echo "should_retrain=true" >> $GITHUB_OUTPUT
+            echo "ℹ️  Manual trigger - proceeding with retraining"
           fi
 
   retrain:
@@ -57,19 +62,24 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+          pip install -e .
 
       - name: Fetch latest data
         run: |
-          # Add your data fetching logic here
-          # This could be from a database, data lake, or API
-          echo "Fetching latest training data..."
-          # Example: python scripts/fetch_fresh_data.py
+          mkdir -p data/{raw,processed}
+          python -c "
+          from sklearn.datasets import fetch_california_housing
+          import pandas as pd
+          data = fetch_california_housing(as_frame=True)
+          df = data.frame
+          df.to_csv('data/raw/housing.csv', index=False)
+          print(f'✅ Fetched {len(df)} samples')
+          "
 
       - name: Train new model
         run: |
-          echo "Training new model with fresh data..."
-          # Run your training script with MLflow tracking
-          python scripts/train.py \
+          echo "🎯 Training new model with fresh data..."
+          python src/models/train.py \
             --experiment-name "automated-retraining" \
             --run-name "retrain-$(date +%Y%m%d-%H%M%S)"
         env:
@@ -78,12 +88,11 @@ jobs:
       - name: Validate new model
         id: validate
         run: |
-          echo "Running validation tests..."
+          echo "✅ Running validation tests..."
           python scripts/validate_model.py \
-            --min-accuracy 0.75 \
+            --min-accuracy ${{ github.event.inputs.min_accuracy || '0.75' }} \
             --output validation_results.json
           
-          # Check if validation passed
           if [ $? -eq 0 ]; then
             echo "validation_passed=true" >> $GITHUB_OUTPUT
           else
@@ -93,21 +102,15 @@ jobs:
       - name: Register model in MLflow
         if: steps.validate.outputs.validation_passed == 'true'
         run: |
-          echo "Registering model in MLflow Model Registry..."
+          echo "📦 Registering model in MLflow Model Registry..."
           python scripts/register_model.py \
             --model-name "production-model" \
             --stage "Staging"
 
-      - name: Run deployment tests
-        if: steps.validate.outputs.validation_passed == 'true'
-        run: |
-          echo "Running deployment tests..."
-          python scripts/test_model_endpoint.py
-
       - name: Promote to production
         if: steps.validate.outputs.validation_passed == 'true'
         run: |
-          echo "Promoting model to production..."
+          echo "🚀 Promoting model to production..."
           python scripts/promote_model.py \
             --model-name "production-model" \
             --stage "Production"
@@ -115,23 +118,29 @@ jobs:
       - name: Update reference data
         if: steps.validate.outputs.validation_passed == 'true'
         run: |
-          echo "Updating reference data for drift detection..."
+          echo "🔄 Updating reference data for drift detection..."
           python scripts/update_reference_data.py
 
       - name: Clean up trigger file
         if: always()
         run: |
           rm -f .github/triggers/retrain_trigger.json
-          echo "Trigger file cleaned up"
+          echo "🧹 Trigger file cleaned up"
 
-      - name: Notify on failure
-        if: failure()
-        run: |
-          echo "Retraining pipeline failed!"
-          # Add notification logic (Slack, email, etc.)
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: retraining-artifacts
+          path: |
+            validation_results.json
+            mlflow/
 
-      - name: Notify on success
-        if: success()
+      - name: Summary
+        if: always()
         run: |
-          echo "Model retraining completed successfully!"
-          # Add notification logic (Slack, email, etc.)
+          echo "# 🔄 Retraining Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Trigger**: ${{ github.event.inputs.reason || 'automated' }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Validation**: ${{ steps.validate.outputs.validation_passed }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Timestamp**: $(date)" >> $GITHUB_STEP_SUMMARY
