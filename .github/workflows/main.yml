@@ -136,6 +136,7 @@ jobs:
 
       - name: 💾 Save model artifacts
         uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: model-artifacts
           path: |
@@ -143,6 +144,7 @@ jobs:
             models/
             data/
           retention-days: 7
+          if-no-files-found: ignore
 
       - name: ✅ Training Stage Complete
         run: echo "✅ Model training completed successfully!"
@@ -211,10 +213,12 @@ jobs:
 
       - name: 📊 Upload validation results
         uses: actions/upload-artifact@v4
+        if: hashFiles('validation_results.json') != ''
         with:
           name: validation-results
           path: validation_results.json
           retention-days: 7
+          if-no-files-found: ignore
 
       - name: ✅ Validation Stage Complete
         run: echo "✅ Model validation completed!"
@@ -383,7 +387,8 @@ jobs:
             monitoring/reports/
             monitoring/metrics/
             monitoring/alerts/
-          retention-days: 30
+          retention-days: 7
+          if-no-files-found: ignore
 
       - name: ✅ Monitoring Check Complete
         run: echo "✅ Monitoring check completed!"
