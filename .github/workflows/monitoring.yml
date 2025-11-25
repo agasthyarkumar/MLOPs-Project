@@ -1,0 +1,71 @@
+name: Production Monitoring
+
+on:
+  schedule:
+    # Run monitoring every 6 hours
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+
+env:
+  PYTHON_VERSION: '3.10'
+
+jobs:
+  monitor:
+    name: Monitor Production Model
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Fetch production data
+        run: |
+          # Add logic to fetch production data
+          # This could be from logs, database, or monitoring system
+          echo "Fetching production data for monitoring..."
+          # Example: python scripts/fetch_production_data.py
+
+      - name: Run monitoring checks
+        id: monitor
+        run: |
+          python scripts/run_monitoring.py \
+            --data-path data/production/current_batch.csv \
+            --predictions-path data/production/predictions.csv \
+            --labels-path data/production/labels.csv \
+            --model-version ${{ github.sha }}
+        continue-on-error: true
+
+      - name: Upload monitoring reports
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: monitoring-reports
+          path: |
+            monitoring/reports/
+            monitoring/metrics/
+            monitoring/alerts/
+
+      - name: Check if retraining triggered
+        if: steps.monitor.outcome == 'failure' && steps.monitor.outputs.exit_code == '2'
+        run: |
+          echo "Monitoring detected issues - retraining workflow will be triggered"
+
+      - name: Commit trigger file
+        if: steps.monitor.outcome == 'failure'
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add .github/triggers/retrain_trigger.json || true
+          git commit -m "Trigger automated retraining [skip ci]" || true
+          git push || true

@@ -209,6 +209,112 @@ drift_summary = detector.detect_data_drift(
 print(f"Drift Detected: {drift_summary['drift_detected']}")
 ```
 
+## Self-Healing MLOps Pipeline
+
+This project implements an automated self-healing MLOps pipeline that continuously monitors model performance and triggers retraining when needed.
+
+### Monitoring Architecture
+
+The monitoring system consists of three main components:
+
+1. **Drift Detection** (Evidently AI)
+   - Monitors data distribution changes
+   - Detects feature drift and target drift
+   - Configurable drift thresholds
+
+2. **Performance Monitoring** (Prometheus + Custom Metrics)
+   - Tracks accuracy, F1, precision, and recall
+   - Detects performance degradation
+   - Historical metrics tracking
+
+3. **Automated Retraining**
+   - Triggered by drift or performance degradation
+   - Automated model validation
+   - MLflow Model Registry integration
+   - Cooldown period to prevent excessive retraining
+
+### Setup Monitoring
+
+1. Install monitoring dependencies:
+```bash
+pip install -r requirements.txt
+```
+
+2. Configure monitoring parameters:
+```bash
+# Edit config/monitoring_config.json
+{
+  "drift_threshold": 0.5,
+  "performance_threshold": 0.75,
+  "retraining_cooldown_hours": 24
+}
+```
+
+3. Prepare reference data:
+```bash
+# Copy your baseline training data
+cp data/processed/train_data.csv data/reference/reference_data.csv
+```
+
+### Running Monitoring
+
+#### Manual Monitoring Check
+```bash
+python scripts/run_monitoring.py \
+  --data-path data/production/current_batch.csv \
+  --predictions-path data/production/predictions.csv \
+  --labels-path data/production/labels.csv \
+  --model-version v1.0.0
+```
+
+#### Automated Monitoring (GitHub Actions)
+The monitoring workflow runs automatically every 6 hours via `.github/workflows/monitoring.yml`
+
+### Retraining Pipeline
+
+When monitoring detects issues, the automated retraining pipeline:
+
+1. **Checks trigger conditions**
+   - Data drift above threshold
+   - Performance degradation detected
+   - Cooldown period elapsed
+
+2. **Fetches fresh data** and trains new model
+
+3. **Validates new model** against test set
+
+4. **Registers in MLflow** Model Registry
+
+5. **Promotes to production** if validation passes
+
+6. **Updates reference data** for future drift detection
+
+### Monitoring Reports
+
+- **Drift Reports**: `monitoring/reports/drift_report_*.html`
+- **Performance Metrics**: `monitoring/metrics/metrics_*.json`
+- **Alerts**: `monitoring/alerts/alert_*.json`
+
+### CI/CD Integration
+
+The self-healing pipeline integrates with GitHub Actions:
+
+- `.github/workflows/monitoring.yml` - Scheduled monitoring
+- `.github/workflows/retrain.yml` - Automated retraining
+
+### Configuration
+
+Edit `config/monitoring_config.json`:
+
+```json
+{
+  "drift_threshold": 0.5,           // Drift detection threshold
+  "performance_threshold": 0.75,     // Minimum acceptable accuracy
+  "retraining_cooldown_hours": 24,  // Hours between retraining
+  "enable_auto_retrain": true        // Enable automated retraining
+}
+```
+
 ## 🧪 Testing
 
 ```bash
@@ -251,7 +357,7 @@ make docker-build    # Build Docker image
 make docker-run      # Run Docker container
 ```
 
-## 🛠️ Development
+## 🔧 Development
 
 ### Add New Model
 

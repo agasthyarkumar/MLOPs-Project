@@ -61,3 +61,14 @@ models/*.joblib
 
 # Allow final exported model
 !models/model.pkl
+
+# Monitoring outputs
+monitoring/reports/
+monitoring/metrics/
+monitoring/alerts/
+data/reference/reference_data_*.csv
+data/reference/reference_data_*.parquet
+.github/triggers/
+
+# Validation results
+validation_results.json

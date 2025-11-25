@@ -91,7 +91,7 @@ class EnsembleModel:
     def calculate_metrics(self, y_true, y_pred) -> dict:
         """Calculate regression metrics"""
         
-        mae = mean_absolute_error(y_true, y_pred)
+        mae = mean_absolute_error(y_true, y_preda)
         mse = mean_squared_error(y_true, y_pred)
         rmse = np.sqrt(mse)
         r2 = r2_score(y_true, y_pred)
