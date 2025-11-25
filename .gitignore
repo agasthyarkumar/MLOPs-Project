@@ -28,9 +28,14 @@ mlflow/
 mlruns/
 artifacts/
 
-# Data
+# Data - DO NOT commit large data files
 data/raw/*.csv
+data/raw/*.parquet
+data/processed/*.csv
 data/processed/*.parquet
+data/production/*.csv
+!data/raw/.gitkeep
+!data/processed/.gitkeep
 *.db
 
 # Jupyter
@@ -54,13 +59,14 @@ data/processed/*.parquet
 .DS_Store
 Thumbs.db
 
-# Models
+# Models - DO NOT commit large binary files
 models/*.pkl
 models/*.h5
 models/*.joblib
-
-# Allow final exported model
-!models/model.pkl
+models/*.onnx
+models/*.pt
+models/*.pth
+!models/.gitkeep
 
 # Monitoring outputs
 monitoring/reports/
