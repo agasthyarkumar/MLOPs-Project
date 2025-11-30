@@ -19,6 +19,7 @@ import mlflow
 import mlflow.sklearn
 from datetime import datetime
 import os
+from mlflow.models.signature import infer_signature
 
 import sys
 sys.path.append('.')
@@ -150,8 +151,10 @@ class EnsembleModel:
             mlflow.log_metric("improvement_percentage", improvement)
             logger.info(f"\nImprovement over baseline: {improvement:.2f}%")
             
-            # Log model
-            mlflow.sklearn.log_model(self.ensemble_model, "model")
+            # Log model with signature and input example to help MLflow infer schema
+            input_example = X_train.head(5)
+            signature = infer_signature(X_train, self.ensemble_model.predict(X_train))
+            mlflow.sklearn.log_model(self.ensemble_model, "model", signature=signature, input_example=input_example)
             
             # Save model
             os.makedirs('models', exist_ok=True)

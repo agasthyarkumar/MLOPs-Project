@@ -13,6 +13,7 @@ import numpy as np
 import mlflow
 import mlflow.sklearn
 from mlflow.tracking import MlflowClient
+from mlflow.models.signature import infer_signature
 
 from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
 from sklearn.linear_model import LinearRegression, Ridge, Lasso
@@ -183,8 +184,10 @@ class ModelTrainer:
                 
                 logger.info("Feature importance logged")
             
-            # Log model
-            mlflow.sklearn.log_model(self.model, "model")
+            # Log model with signature and input example to help MLflow infer schema
+            input_example = X_train.head(5)
+            signature = infer_signature(X_train, self.model.predict(X_train))
+            mlflow.sklearn.log_model(self.model, "model", signature=signature, input_example=input_example)
             
             # Save model locally
             os.makedirs('models', exist_ok=True)
