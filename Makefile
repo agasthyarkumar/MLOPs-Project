@@ -138,7 +138,7 @@ serve:
 	uvicorn src.api.main:app --reload --host 0.0.0.0 --port 8000
 
 mlflow-ui:
-	mlflow ui --host 0.0.0.0 --port 5000
+	 mlflow ui --backend-store-uri ./mlflow --host 0.0.0.0 --port 5000 > logs/mlflow_ui.log 2>&1 & echo $!
 
 test:
 	pytest tests/ -v --cov=src
